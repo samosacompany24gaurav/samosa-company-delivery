@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111">
+<title>Samosa Company - Order Online</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f6f6f6;color:#171717}
+header{background:#111;color:#fff;padding:18px 16px;position:sticky;top:0;z-index:5}
+h1{margin:0;font-size:25px}.sub{font-size:13px;margin-top:5px;color:#ddd}
+.wrap{max-width:650px;margin:auto;padding:14px}
+.card{background:#fff;border-radius:14px;padding:14px;margin:10px 0;box-shadow:0 2px 10px #00000012}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #eee;padding:13px 0}
+.item:last-child{border-bottom:0}.name{font-weight:700}.price{font-size:14px;color:#555;margin-top:4px}
+button{border:0;border-radius:9px;padding:10px 13px;background:#111;color:white;font-weight:700}
+.qty{display:flex;align-items:center;gap:8px}.qty button{padding:6px 10px}.qty span{min-width:20px;text-align:center}
+input,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:9px;margin:6px 0;font-size:15px}
+.total{font-size:20px;font-weight:800}.notice{padding:10px;border-radius:9px;background:#fff4d6;font-size:13px}
+.pay{background:#eef8ee;padding:12px;border-radius:10px;margin-top:10px}
+.order{width:100%;padding:14px;font-size:16px;margin-top:10px}.small{font-size:12px;color:#666}
+</style>
+</head>
+<body>
+<header><h1>🥟 SAMOSA COMPANY</h1><div class="sub">Fresh • Tasty • Order Online</div></header>
+<div class="wrap">
+<div class="card">
+<h3>Menu</h3>
+<div id="menu"></div>
+</div>
+
+<div class="card">
+<h3>Your Details</h3>
+<input id="name" placeholder="Customer name">
+<input id="phone" placeholder="Mobile number" inputmode="numeric">
+<textarea id="address" rows="3" placeholder="Complete delivery address"></textarea>
+<button type="button" onclick="getLocation()">📍 Use My Location</button>
+<div class="small" id="loc">Location not added</div>
+</div>
+
+<div class="card">
+<div class="notice">Minimum order ₹400 • Delivery available only in SIDCUL & Shivalik Nagar</div>
+<div class="pay"><b>UPI Payment</b><br>Q803144204@ybl<br><span class="small">Please complete UPI payment before placing the order.</span></div>
+<p class="total">Total: ₹<span id="total">0</span></p>
+<button class="order" onclick="placeOrder()">Place Order on WhatsApp</button>
+</div>
+</div>
+
+<script>
+const products=[
+["Aloo Samosa",18],["Cheese & Corn Samosa",30],["Makhani Gravy Samosa",30],
+["Bread Pakoda",25],["Chole Samosa Chaat",35]
+];
+let cart=products.map(()=>0), coords="";
+function render(){
+ document.getElementById("menu").innerHTML=products.map((p,i)=>`
+ <div class="item"><div><div class="name">${p[0]}</div><div class="price">₹${p[1]} each</div></div>
+ <div class="qty"><button onclick="change(${i},-1)">−</button><span>${cart[i]}</span><button onclick="change(${i},1)">+</button></div></div>`).join("");
+ calc();
+}
+function change(i,d){cart[i]=Math.max(0,cart[i]+d);render()}
+function calc(){document.getElementById("total").textContent=cart.reduce((s,q,i)=>s+q*products[i][1],0)}
+function getLocation(){
+ if(!navigator.geolocation){alert("Location support is not available.");return}
+ navigator.geolocation.getCurrentPosition(p=>{
+  coords=`https://maps.google.com/?q=${p.coords.latitude},${p.coords.longitude}`;
+  document.getElementById("loc").innerHTML="✅ Location added";
+ },()=>alert("Location permission allow kijiye."));
+}
+function placeOrder(){
+ const total=cart.reduce((s,q,i)=>s+q*products[i][1],0);
+ if(total<400){alert("Minimum order ₹400 hai.");return}
+ const n=document.getElementById("name").value.trim(), ph=document.getElementById("phone").value.trim(), a=document.getElementById("address").value.trim();
+ if(!n||!ph||!a){alert("Name, mobile aur address fill kijiye.");return}
+ let lines=cart.map((q,i)=>q?`${products[i][0]} x ${q} = ₹${q*products[i][1]}`:"").filter(Boolean).join("%0A");
+ let msg=`*SAMOSA COMPANY - NEW ORDER*%0A%0A${lines}%0A%0A*Total: ₹${total}*%0AName: ${encodeURIComponent(n)}%0AMobile: ${encodeURIComponent(ph)}%0AAddress: ${encodeURIComponent(a)}%0A${coords?`Location: ${encodeURIComponent(coords)}`:""}`;
+ window.open("https://wa.me/916399723823?text="+msg,"_blank");
+}
+render();
+</script>
+</body>
+</html>
